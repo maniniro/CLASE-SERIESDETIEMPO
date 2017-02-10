@@ -1,0 +1,71 @@
+##MATRICES
+matriz1 <- matrix(c(2,4,20,40,200,400,2000,4000,-2,-4,-20,-40,-200,-400,-2000,-4000),4,4)
+matriz1
+
+matriz1[4,1]
+
+matriz1[,c(2,3)]
+
+matriz1 %*% matriz1
+
+?cbind
+?rbind
+
+##cbind combinar COLUMNAS
+
+matriz2 <- matrix(c(1,2,3,4,5,6,7,8),2,4)
+matriz2
+
+matriz3 <- cbind(c(10,20,30,50),matriz2[,4])
+matriz3
+
+##rbind combinar RENGLONES
+
+matriz4 <- matrix(c(8,7,6,5,4,3,2,1),4,2)
+matriz4
+
+matriz5 <- rbind(matriz1[2,],matriz4[2,])
+matriz5
+
+matriz1*matriz1
+
+##LECTURA DE DATOS EN R###
+
+getwd()
+setwd("C://Users//SALA-F24//RMariana")
+
+install.packages("foreign")
+library(foreign)
+
+datastata <- read.dta("C://Users//SALA-F24//Desktop//clase1.dta")
+datastata
+
+##conocer los datos que manejamos
+
+head(datastata)
+
+colnames(datastata)
+
+##mostrar valor del renglon 3, columna 5
+datastata[3,5]
+datastata[1:20,"edad"]
+##de la columna 2, deciles, dame los valoreas de las personas 1, 5 y 7
+datastata[c(1,5,7),2]
+
+##renombrar la columna 2
+colnames(datastata)[2] <- "ingreso"
+colnames(datastata)
+
+###DESCRIPTIVOS
+summary(datastata)
+
+##guardar datos
+save(datastata,file="C://Users//SALA-F24//RMariana//Clase2-datastate.RData")
+
+##cargar el archivo
+load("Clase2-datastate.RData")
+
+install.packages("haven")
+library(haven)
+clase1 <- read_dta("C://Users//SALA-F24//Desktop//clase1.dta")
+clase1
