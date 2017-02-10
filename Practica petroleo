@@ -1,0 +1,9 @@
+install.packages("readxl")
+library(readxl)
+petroleo <- read_excel("C://Users//SALA-F24//Desktop//petroleo.xlsx")
+petroleo
+
+##Declaramos como serie de tiempo 
+
+petroleo.ts <- ts(petroleo,frequency=1,start=(1))
+plot(petroleo.ts,ylab="Precio",xlab="Periodo",main="Precio del Barril",col=3)
