@@ -1,0 +1,33 @@
+install.packages("foreign")
+library (foreign)
+install.packages("readxl")
+library (readxl)
+setwd("C://Users//Usuario//Downloads")
+petroleo <- read_excel("C://Users//Usuario//Downloads//petroleo.xlsx")
+petroleo.ts <- ts (petroleo)   # convertirlo a una serie de tiempo (ts)
+plot(petroleo.ts, ylab="petroleo", xlab= "periodo", main = "PETROLEO", col="red")
+petroleo.ts=ts(petroleo, frequency=5)
+petroleo.descom <- decompose (petroleo.ts, "additive")
+petroleo.descom <- decompose (petroleo.ts, "multiplicative")
+
+#GRAFICA POR ELEMENTOS
+plot(as.ts(petroleo.descom$seasonal)) #grafica como serie de tiempo petroleo   ### estacional
+plot(as.ts(petroleo.descom$trend))  #### tendencia
+plot(as.ts(petroleo.descom$random))  ####aleatorio
+plot (petroleo.descom)  ### los 4 graficos
+
+locator()
+
+windows()
+par (mfrow=c(3,1))
+plot(diff(petroleo.descom$seasonal)) #grafica como serie de tiempo petroleo   ### estacional
+plot(diff(petroleo.descom$trend))  #### tendencia
+plot(diff(petroleo.descom$random))
+plot(petroleo.descom)
+
+
+importa <- read_excel("C://Users//Usuario//Downloads//importa.xlsx")
+importa.ts <- ts (importa)
+plot(importa.ts, ylab="", xlab= "", main="IMPORTA", col="red")
+importa.ts=ts (importa, frequency=5)
+importa.descom <- decompose (importa.ts)
