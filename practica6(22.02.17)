@@ -1,0 +1,42 @@
+######
+install.packages("readxl")
+library (readxl)
+install.packages("foreign")
+library (foreign)
+
+petroleo <- read_excel("C:/Users/Sala-F24/Downloads/petroleo.xlsx")
+
+petroleo.ts <- ts(petroleo)
+
+install.packages("tseries") ##Encontrar estacionalidad
+library(tseries)
+
+?acf
+
+##Dar los valores en los retrasos correspondientes
+
+acf(petroleo.ts, lag=20, plot=FALSE)
+
+
+acf(petroleo.ts, plot=TRUE)
+
+
+##TRANSFORMACION LOGARITMICA
+
+petroleo.log <- log(petroleo.ts)
+kpss.test(petroleo.log)
+
+##el estadistico kpss nos permite ver si hay estacionalidad en la serie
+##Valores menores a 0.05 no son estacionarias,nuestra serie no es estacionaria
+##p-value<0.05, no estaionaridad
+
+
+## con t de Dickey-Fuller aumentada
+adf.test(petroleo.log, alternative="stationary")
+###valores menores al punto critico 0.05 indican datos estacionarios 
+##p-value <0.05, estacionaridad
+## el p-value=0.4878 respecto al punto critico, nos indica una serie no estacionaria 
+
+##Llamamos al estadistico box ljoung
+
+Box.test(petroleo.log)
