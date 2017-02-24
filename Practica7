@@ -1,0 +1,44 @@
+install.packages("readxl")
+library (readxl)
+install.packages("foreign")
+library (foreign)
+
+base <- read_excel("C:/Users/Sala-F24/Downloads/base.xlsx")
+
+?lm
+
+ls(base)
+View(base)
+
+##Estimar la regresion lineal, guardar el modelo con una nueva variable 
+
+base.lm <- lm(peso ~ talla, base)
+
+##Extraemos los coeficientes (betas)
+
+betas=coefficients(base.lm);betas
+
+###Coeficientes de determinacion 
+
+summary(base.lm)$r.squared
+
+##aproximadamente el 78.7% de la variacion de y esta explicada por x 
+##La talla es predictor del peso 
+
+
+##prueba F, puede establcerse si existe alguna asociacion significativa entre x e y, 
+##bajo la hipotesis nula es 0 
+
+summary(base.lm)
+
+##Valores predichos IC95%
+
+predict(base.lm, base, interval="predict",level=0.95)
+
+##grafico de residuos
+
+loquesobra <- residuals(base.lm)
+plot(jitter(loquesobra)~jitter(talla), ylab="Residuos", xlab="Talla", data=base)
+abline(0,0, col="red")
+
+summary(loquesobra)
