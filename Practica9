@@ -1,0 +1,58 @@
+############################### REGRESIÓN CON SERIES DE TIEMPO (Yt) Y UNA VARIABLE PREDICTORA(xt)
+## Funcion (tslm): se utiliza para adaptar modelos lineales a series temporables
+## incluyendo componentes de tendencia y estacionalidad tslm
+
+library (readxl)
+indicators<- read_excel("C://Users//SALA-F24//Downloads//indicators.xlsx")
+
+install.packages("forecast")
+library(forecast)
+
+indicators.ts<- ts(gdp, data=indicators)
+indicators.ts<- ts(co2, data=indicators)
+View(indicators.ts)
+
+plot(indicators.ts)
+estimado.ts<- tslm(gdp_capita ~ co2,data=indicators.ts)
+summary(estimado.ts)
+
+
+
+#Call:
+# tslm(formula = gdp_capita ~ co2, data = indicators.ts)
+
+#Residuals:
+# Min      1Q  Median      3Q     Max 
+# -2866.9  -906.4   206.1   934.8  1988.6 
+
+# Coefficients:
+# Estimate Std. Error t value Pr(>|t|)    
+# (Intercept) -2.145e+03  3.916e+02  -5.476 1.28e-06 ***
+# co2          2.119e-02  1.270e-03  16.689  < 2e-16 ***
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+#  Residual standard error: 1253 on 52 degrees of freedom
+# Multiple R-squared:  0.8427,	Adjusted R-squared:  0.8396 
+#   F-statistic: 278.5 on 1 and 52 DF,  p-value: < 2.2e-16
+
+
+
+#########################################################
+#funcion no lineal (log-log)
+par(mfrow=c(1,2))
+estimado.ts2<-lm(log(gdp_capita) ~ log(co2), data=indicators.ts)
+summary(estimado.ts2)
+windows()  #### para que el grafico solo sea uno
+
+plot(jitter(gdp_capita)~jitter(co2),xlab="Toneladas de co2", ylab="Gross Domestic Product", data=indicators.ts)
+
+lines(1:54, exp(estimado.ts2$coef[1]+estimado.ts2$coef[2]*log(1:54))) #del grafico anterior poner una linea exp...
+
+plot(log(jitter(gdp_capita))~log(jitter(co2)),xlab="log(co2)", ylab="log(gdp)",data=indicators.ts)
+abline(estimado.ts2, col="red")
+
+
+## residuos (log-log)
+residuos.log <- residuals(estimado.ts2)
+plot(jitter(residuos.log,amount=.005)~jitter(log(co2)),ylab="Residuos", xlab="log(co2)", data=indicators.ts, col="blue")
