@@ -1,0 +1,32 @@
+######## ejemplo 6 de marzo
+library(readxl)
+consumop<-read_excel("C://Users//SALA-F24//Downloads//ejemplo3.xlsx")
+install.packages("forecast")  ###paqueteria para proyecciones: funcion (stl)
+library(forecast)
+
+consumop.ts<- ts (consumop, start=c(1910,1), frequency=12)# v a tomar como serie de tiempo consumop desde enero 1910
+plot(consumop.ts, xlab="periodo de tiempo", ylab="producto medio de productos", main=" Consumo medio de productos", col="purple")
+
+consumop.descom<-decompose(consumop.ts, "multiplicative")
+
+cycle(consumop.ts)
+
+####detectando patron estacional
+windows()
+boxplot(consumop.ts~cycle(consumop.ts))  ######### que significan los tamaños y bigotes
+
+x11()
+par(mfrow=c(1,3))
+plot(consumop.descom$seasonal)
+plot(consumop.descom$trend)
+plot(consumop.descom$random)
+
+#extraer tendencia con el metodo loose, funcion (stl)
+consumop.ts<- ts(consumop[1:56,1], frequency=12, start = c(1910,1))# 56 valores en una columna
+class(consumop.ts) ### para verificar que es una serie de tiempo
+View(consumop.ts)
+
+
+consumop.stl<- stl(consumop.ts, s.window="periodic")
+names(consumop.stl)
+consumop.stl
