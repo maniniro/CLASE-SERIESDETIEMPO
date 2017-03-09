@@ -1,0 +1,57 @@
+####   ejemplo   ######
+
+library(readxl)
+ventas<- read_excel("C://Users//SALA-F24//Downloads//ejemplo.xlsx")
+
+ventas.ts<-ts(ventas, start=c(2012,1), frequency=6) # 6 por semestre
+plot(ventas.ts,  xlab="periodo de tiempo", ylab= "ventaqs en millones", main="ventas en millones", col="green")
+
+ventas.descom <- decompose(ventas.ts,"additive")
+
+cycle(ventas.ts)
+boxplot(ventas.ts~cycle(ventas.ts))
+
+plot (as.ts(ventas.descom$seasonal))
+plot(as.ts(ventas.descom$trend))
+plot(as.ts(ventas.descom$random))
+plot(ventas.descom)
+
+par(mfrow=c(1,3)) # de una fila y tres columnas
+plot (ventas.descom$seasonal)
+plot(ventas.descom$trend)
+plot(ventas.descom$random)
+
+
+
+#extraer tendencia (Tt)con el método loose, funcion(stl)
+ventas1.ts<- ts(ventas[1:24,1], frequency=6, start=c(2012,1))
+class(ventas1.ts)
+
+ventas.stl<-stl(ventas1.ts, s.window="periodic")
+names(ventas.stl)
+ventas.stl
+
+ventas.tend<- ventas.stl$time.series[,2]
+ventas.tend
+
+plot(ventas1.ts, col="blue", main="ventas en millones de euros", xlab="periodo", ylab="valores de la tendencia")
+lines(ventas.stl$time.series[,2],col="red", ylab="tendencia")
+
+
+
+
+
+
+############################### REGRESIÓN CON SERIES DE TIEMPO (Yt) Y UNA VARIABLE PREDICTORA(xt)
+## Funcion (tslm): se utiliza para adaptar modelos lineales a series temporables
+## incluyendo componentes de tendencia y estacionalidad tslm
+
+library (readxl)
+indicators<- read_excel("C://Users//SALA-F24//Downloads// insicators.xlsx")
+
+install.packages("forecast")
+library(forecast)
+
+indicators.ts<- ts(gdp, data=indicators)
+indicators.ts<- ts(co, data=indicators)
+View(indicators.ts)
