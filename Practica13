@@ -1,0 +1,34 @@
+##promedios moviles
+
+
+install.packages("fpp")
+library(fpp)
+
+help(ma)
+
+library(readxl)
+ventas <- read_excel("C:/Users/SALA-F24/Downloads/ma_r.xlsx")
+ventas.ts<- ts(ventas,star=c(1994))
+ma(ventas.ts,order=3)
+ma(ventas.ts,order=5)
+ma(ventas.ts,order=7)
+ma(ventas.ts,order=9)
+
+plot(ventas.ts,main="Ventas de Empresa x", ylab="Toneladas", xlab="Año",col="purple")
+lines(ma(ventas.ts,3),col="red")
+
+lines(ma(ventas.ts,5),col="blue")
+lines(ma(ventas.ts,7),col="yellow")
+lines(ma(ventas.ts,9),col="brown")
+
+##Promedios moviles centrados
+
+ventas.ts2 <- window(ventas.ts,star=1994)
+ma4 <- ma(ventas.ts2, order=4, centre=FALSE)
+ma4x2 <- ma(ventas.ts2, order=4, centre=TRUE)
+
+ma4x2
+
+plot(ventas.ts2, main="Ventas de empresas X", ylab="Toneladas", xlab="Año")
+lines(ma4,col="brown")
+lines(ma4x2, col="purple")
