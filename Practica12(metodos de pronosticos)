@@ -1,0 +1,38 @@
+install.packages("fpp")
+library(fpp)
+
+
+library(readxl)
+ejemplo3 <- read_excel("C:/Users/SALA-F24/Downloads/ejemplo3.xlsx")
+ejemplo3.ts<- ts(ejemplo3,star=c(1990))
+
+ventas <- read_excel("C:/Users/SALA-F24/Downloads/ejemplo3.xlsx")
+ventas.ts<- ts(ventas,star=c(2010,1),frequency=12)
+                            
+plot(ventas.ts, xlab="Tiempo", ylab="Ventas en Millones", main="Series temporal")
+
+##Método de la media (Average Method)
+
+help(meanf)
+
+meanf(ventas.ts, h=10)
+
+##Método del ingenuo "Naive method" 
+ 
+
+help(naive)
+naive(ventas.ts, h=10)
+
+##Si corres naive estacional, tu serie tiene estacionalidad (naives)
+
+snaive(ventas.ts, h=10)
+
+##Metodo Deriva
+
+help(rwf)
+
+rwf(ventas.ts, h=10, drift=TRUE)
+
+##Graficas
+
+##ventas.tsp <- window(ventas.ts, start=c(2010,1), frequency=12)
