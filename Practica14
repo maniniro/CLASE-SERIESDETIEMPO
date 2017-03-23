@@ -1,0 +1,105 @@
+install.packages("fpp")
+library(fpp)
+
+install.packages("readxl")
+library(readxl)
+ejemplo3 <- read_excel("C:/Users/SALA-F28/Downloads/ejemplo3.xlsx")
+ejemplo3.ts<- ts(ejemplo3,star=c(1990))
+
+ventas <- read_excel("C:/Users/SALA-F28/Downloads/ejemplo3.xlsx")
+ventas.ts<- ts(ventas,star=c(2010,1),frequency=12)
+
+plot(ventas.ts, xlab="Tiempo", ylab="Ventas en Millones", main="Series temporal")
+
+##Método de la media (Average Method)
+
+help(meanf)
+
+meanf(ventas.ts, h=10)
+
+##Método del ingenuo "Naive method" 
+
+
+help(naive)
+naive(ventas.ts, h=10)
+
+##Si corres naive estacional, tu serie tiene estacionalidad (naives)
+
+snaive(ventas.ts, h=10)
+
+##Metodo Deriva
+
+help(rwf)
+
+rwf(ventas.ts, h=10, drift=TRUE)
+
+##Graficas
+
+ventas.tsp <- window(ventas.ts, start=c(2010,1), frequency=12)
+ventas.tsp
+ventas.meanf <- meanf(ventas.tsp, h=20)
+ventas.naive <- naive(ventas.tsp, h=20)
+ventas.snaive <- snaive(ventas.tsp, h=20)
+
+
+##plot.conf=FALSE, tambien puede ser shaded=TRUE
+plot(ventas.meanf, plot.conf=FALSE, main="Pronosticos del valor de ventas")
+lines(ventas.naive$mean, col=2)
+lines(ventas.snaive$mean, col=3)
+
+legend("topright", lty=1, col=c(4,2,3), legend=c("Metodo de la media","Metodo Naive","Metodo Naive Estacional"))
+
+
+accuracy(ventas.meanf, ventas.tsp)
+accuracy(ventas.naive, ventas.tsp)
+accuracy(ventas.snaive, ventas.tsp)
+
+
+
+
+###Pronosticos IPC 
+ipc <- read_excel("C:/Users/SALA-F28/Downloads/ipc.xlsx")
+ipc.ts<- ts(ipc, frequency = 365)
+
+
+ipc.ts<- ts(ipc,end=217)
+
+plot(ipc.ts, main="Series temporal")
+
+##Método de la media (Average Method)
+
+help(meanf)
+
+meanf(ipc.ts, h=10)
+
+##Método del ingenuo "Naive method" 
+
+
+help(naive)
+naive(ipc.ts, h=10)
+
+##Si corres naive estacional, tu serie tiene estacionalidad (naives)
+
+snaive(ipc.ts, h=10)
+
+##Metodo Deriva
+
+help(rwf)
+
+rwf(ipc.ts, h=10, drift=TRUE)
+
+##Graficas
+
+ipc.tsp <- window(ipc.ts, frequency = 365)
+ipc.tsp
+ipc.meanf <- meanf(ipc.tsp, h=150)
+ipc.naive <- naive(ipc.tsp, h=150)
+ipc.snaive <- snaive(ipc.tsp, h=150)
+
+
+##plot.conf=FALSE, tambien puede ser shaded=TRUE
+plot(ipc.meanf, plot.shaded = TRUE, main="Pronosticos del IPC")
+lines(ipc.naive$mean, col=2)
+lines(ipc.snaive$mean, col=3)
+
+legend("top", lty=1, col=c(4,2,3), legend=c("Metodo de la media","Metodo Naive","Metodo Naive Estacional"))
