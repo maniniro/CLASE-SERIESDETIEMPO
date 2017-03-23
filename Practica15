@@ -1,0 +1,62 @@
+library(readxl)
+library(forecast)
+
+base <- read_excel("C:/Users/SALA-F28/Downloads/base.xlsx")
+
+plot(jitter(consumo)~jitter(ingresos),xlab="Ingresos",ylab="Consumo",data=base)
+
+##Valores de jitter (la regresión)
+
+estimado <- lm(consumo ~ ingresos, data=base)
+
+abline(estimado,col="red")
+
+summary(estimado)
+
+#Bo=Intercepto B1=Ingresos, ***=p-value <0.001 (99.9%)
+## y=648.7937 + 0.24 (Valor de X)
+
+##Residuos
+
+residuos <- residuals(estimado)
+plot(jitter(residuos)~jitter(ingresos),ylab="Residuos", xlab="Ingresos", data=base)
+abline(0,0,col="blue")
+
+###Pronosticos con Regresion
+
+fitted(estimado)[1]
+##Estimado=modelo de regresión
+
+pronosticos <- forecast(estimado, newdata=data.frame(ingresos=2000))
+
+plot(pronosticos, xlab="Ingresos", ylab="Consumo")
+
+pronosticos <- forecast(estimado, newdata=data.frame(ingresos=1500))
+
+plot(pronosticos, xlab="Ingresos", ylab="Consumo")
+
+
+###TRansformacion logaritmica
+windows()
+par(mfrow=c(1,2))
+estimado1 <- lm(log(consumo)~log(ingresos),data=base)
+summary(estimado1)
+
+
+#funcion no lineal (log-log)
+par(mfrow=c(1,2))
+estimado.ts2<-lm(log(gdp_capita) ~ log(co2), data=indicators.ts)
+summary(estimado.ts2)
+windows()  #### para que el grafico solo sea uno
+
+plot(jitter(gdp_capita)~jitter(co2),xlab="Toneladas de co2", ylab="Gross Domestic Product", data=indicators.ts)
+
+lines(1:54, exp(estimado.ts2$coef[1]+estimado.ts2$coef[2]*log(1:54))) #del grafico anterior poner una linea exp...
+
+plot(log(jitter(gdp_capita))~log(jitter(co2)),xlab="log(co2)", ylab="log(gdp)",data=indicators.ts)
+abline(estimado.ts2, col="red")
+
+
+## residuos (log-log)
+residuos.log <- residuals(estimado.ts2)
+plot(jitter(residuos.log,amount=.005)~jitter(log(co2)),ylab="Residuos", xlab="log(co2)", data=indicators.ts, col="blue")
