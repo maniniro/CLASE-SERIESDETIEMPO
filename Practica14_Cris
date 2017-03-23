@@ -1,0 +1,175 @@
+library(readxl)
+library(forecast)
+
+consumo <- read_excel("C:/Users/Sala-F28/Downloads/ejemplo3.xlsx")
+View(consumo)
+
+consumop.ts <- ts(consumo, start = c(1910,1), frequency = 12)
+plot(consumop.ts, xlab = "Periodo de Tiempo", ylab = "Consumo medio de productos", col = "Blue")
+
+consumop.descom <- decompose(consumop.ts, "additive")
+plot(consumop.descom)
+
+cycle(consumop.ts)
+
+boxplot(consumop.ts ~ cycle(consumop.ts))
+
+par(mfrow = c(1,3))
+plot(consumop.descom$trend)
+plot(consumop.descom$seasonal)
+plot(consumop.descom$random)
+
+consumo.ts <- ts(consumo [1:56,1], frequency = 12, start = c(1910,1), end = c(1915,8))
+class(consumo.ts)
+View(consumo.ts)
+
+dim(consumo)
+
+consumop.stl <- stl(consumo.ts, s.window = "periodic", robust = T)
+names(consumop.stl)
+consumop.stl
+
+consumo.tend <- consumop.stl$time.series[,2]
+consumo.tend
+
+plot(consumo.ts, col = "Blue", main = "Consumo de Productos", ylab = "Tendencia", xlab = "Periodo")
+lines(consumop.stl$time.series[,2], col = "Red", ylab = "Tendencia")
+
+consumo.ntend <- consumo.ts - consumop.descom$trend
+plot(as.ts(consumo.ntend), col = "Red")
+
+
+
+plot(consumo.ts, col = "Blue")
+lines(consumo.ntend, col = "Black")
+
+par(mfrow = c(1,2))
+plot(consumo.ts, col = "Blue")
+plot(consumo.ntend, col = "Red")
+
+## AJUSTE ESTACIONAL
+install.packages("fpp")
+library(fpp)
+
+plot(consumo.ts)
+plot(consumop.stl)
+
+monthplot(consumop.stl$time.series[,"seasonal"], main = "Componente Estacional por meses")
+
+plot(consumo.ts, col = "Black", main = "Ajuste Estacional", xlab = "Periodo", ylab = "Indice Estacional")
+lines(seasadj(consumop.stl), col = "Red", ylab = "Ajustado")
+
+## x11-ARIMA CANADA Y X12-ARIMA USA
+
+############# CLASE 09.03.2017 #######################
+
+ventas <- read_excel("C:/Users/Sala-F28/Downloads/ma_r.xlsx")
+
+ventas.ts <- ts(ventas, frequency = 4)
+
+ma(ventas.ts, order = 3)
+ma(ventas, order = 3)
+
+ma(ventas.ts, order = 5)
+ma(ventas, order = 5)
+
+ma(ventas.ts, order = 7)
+ma(ventas, order = 7)
+
+ma(ventas.ts, order = 9)
+ma(ventas, order = 9)
+
+
+plot(ventas.ts, ylab = "Toneladas", main = "Ventas", col = "Black")
+lines(ma(ventas.ts, order = 3), col = "Red")
+lines(ma(ventas.ts, order = 7), col = "Green")
+lines(ma(ventas.ts, order = 5), col = "Magenta")
+lines(ma(ventas.ts, order = 9), col = "Orange")
+
+
+## PROMEDIOS MOVILES CENTRADOS (PROMEDIOS MOVILES DE PROMEDIOS MOVILES)
+# 1.- Para que el promedio movil sea mas simetrico
+# 2.- Un orden mas alto implica mayor simetria 
+#     Considerando el proceso PM(4)
+#     Es posible establecer PM(4x2)
+#     con lo cual
+#   Tt = (1/8)(Yt-2 + (1/4)Yt-1 + (1/4)Yt + (1/4))
+ventas.ts2 <- window(ventas.ts)
+ma4 <- ma(ventas.ts2, order = 4, centre = FALSE)
+ma4X2 <- ma(ventas.ts2, order = 4, centre = TRUE)
+
+ma4X2
+
+plot(ventas.ts2, main = "Ventas", ylab = "Toneladas")
+lines(ma4, col = "Blue")
+lines(ma4X2, col = "Red")
+
+############## CLASE 13.03.2017 ######################
+
+## Ventas Trimestrales
+## Indices estacionales: Calculo de los promedios de acuerdo a los promedios moviles
+
+mra <- read_excel("C:/Users/Sala-F25/Downloads/ejercicio.xlsx")
+
+############# CLASE 15.03.2017 #######################
+
+ventas <- read_excel("C:/Users/Sala-F25/Downloads/ejemplo3.xlsx")
+ipc <- read_excel("C:/Users/Sala-F25/Downloads/ipc.xlsx")
+
+ventas.ts <- ts(ventas, frequency = 12, start = c(2010,1))
+
+plot(ventas.ts, xlab = "Periodo", ylab = "Ventas en Millones", main = "Serie Temporal")
+
+# Metodo de la Media
+meanf(ventas.ts, h = 10)
+
+# Metodo del Ingenuo
+naive(ventas.ts, h = 10)
+rwf(ventas.ts, h = 10)
+## Metodo del Ingenuo con estacionalidad: implica que la serie tiene estacionalidad
+snaive(ventas.ts, h = 10)
+
+# Metodo de Deriva
+rwf(ventas.ts, h = 10, drift = TRUE)
+
+ventas.tsp <- window(ventas.ts, start = c(2010,1), frequency = 12)
+ventas.meanf <- meanf(ventas.tsp, h = 20)
+ventas.naive <- naive(ventas.tsp, h = 20)
+ventas.snaive <- snaive(ventas.tsp, h = 20)
+
+
+plot(ventas.meanf, plot.conf = FALSE, main = "Pronosticos del valor de Ventas")
+lines(ventas.naive$mean, col = 2)
+lines(ventas.snaive$mean, col = 3)
+legend("top", lty = 2, col = c(4,2,3), legend = c("Método de la Media", "Método Naive", "Método Naive Estacional"))
+
+plot(ventas.meanf, shaded = TRUE, main = "Pronosticos del valor de Ventas")
+lines(ventas.naive$mean, col = 2)
+lines(ventas.snaive$mean, col = 3)
+legend("topleft", lty = 2, col = c(4,2,3), legend = c("Método de la Media", "Método Naive", "Método Naive Estacional"))
+
+
+####### SERIE IPC ###########
+
+ipc.ts <- ts(ipc, frequency = 365)
+
+plot(ipc.ts, xlab = "Periodo", ylab = "Indice", main = "Serie Temporal")
+
+ipc.tsp <- window(ipc.ts, frequency = 365)
+ipc.meanf <- meanf(ipc.tsp, h = 150)
+ipc.naive <- naive(ipc.tsp, h = 150)
+ipc.snaive <- snaive(ipc.tsp, h = 150)
+
+plot(ipc.meanf, shaded = TRUE, main = "Pronosticos del IPC")
+lines(ipc.naive$mean, col = 2)
+lines(ipc.snaive$mean, col = 3)
+legend("topleft", lty = 2, col = c(4,2,3), legend = c("Método de la Media", "Método Naive", "Método Naive Estacional"))
+
+# hay dos tipos de medidas basicas: 1.- errores absolutos y 2.- errores cuadraticos
+# 1.- error absoluto medio (EAM): media(|ei|)
+# 2.- error cuadratico medio (RMSE): (media(ei^2))^1/2
+# errores de porcentaje    pi = 100ei/yi
+# error absoluto porcentual medio (EAPM) = media (|pi|)
+
+# NOTA: puede haber escalas donde un valor EAPM sea 0 y la interpretacion
+# no tenga sentido
