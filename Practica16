@@ -1,0 +1,54 @@
+library(forecast)
+library(readxl)
+
+datos <- read_excel("C:/Users/Sala-F24/Downloads/base.xlsx")
+
+datos.ts <- ts(datos)
+
+#View(datos.ts)
+
+plot(datos.ts)
+
+regresion.datos <- tslm(consumo ~ ingresos, data = datos.ts)
+
+summary(regresion.datos)
+
+
+
+
+############# PRONOSTICOS BASADOS EN ESCENARIOS ################
+## INCREMENTOS O DECREMENTOS PORCENTUALES
+
+pronosticos.1p <- forecast(regresion.datos, newdata = data.frame(ingresos = c(-1, 1)))
+
+summary(pronosticos.1p)
+
+plot(pronosticos.1p, ylab = "Y", xlab = "t")
+
+################################################################
+################################################################
+
+
+
+
+############ PRONOSTICOS LINEALES ##################
+
+toneladas <- read_excel("C:/Users/Sala-F24/Downloads/toneladas.xlsx")
+
+toneladas.ts <- ts(toneladas)
+
+plot(toneladas.ts)
+
+pronosticos.lin <- tslm(toneladas.ts ~ trend)
+
+summary(pronosticos.lin)
+
+pronosticos.lin1 <- forecast(pronosticos.lin, h = 15, level = c(80,95))
+
+plot(pronosticos.lin1, ylab = "TONELADAS DE AZUCAR COCA-COLA", xlab = "PERIODO")
+lines(fitted(pronosticos.lin1), col = "Blue")
+
+summary(pronosticos.lin1)
+
+####################################################
+####################################################
