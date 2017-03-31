@@ -1,0 +1,39 @@
+library(forecast)
+
+multiple <- read_excel("C:/Users/Sala-F24/Downloads/multiple.xlsx")
+
+##multiple.ts <- ts(multiple)
+
+windows()
+pairs(multiple[,(1:5)])
+View(multiple)
+
+multiple.log <-data.frame(indice=multiple$indice, log.ahorro=log(multiple$ahorro+1),log.ingreso=log(multiple$ingreso+1), log.bienes=log(multiple$bienes+1), log.servicios=log(multiple$servicios+1))
+pairs(multiple.log[,1:5])
+
+estimado <- lm(indice~log.ahorro + log.ingreso+log.bienes + log.servicios, data=multiple.log)
+
+summary(estimado)
+estimado <- step(lm(indice~log.ahorro + log.ingreso+log.bienes + log.servicios, data=multiple.log))
+
+##El modelo que mejor ajusta es el modelo saturado (modelo con mejor ajuste, con mayor numero de predictores) 
+##modelo nulo(modelo que solo evalua el intercepto) 
+
+###################
+###################
+
+plot(fitted(estimado),multiple.log$indice, ylab="Indice",xlab="Indice Predicho")
+
+CV(estimado)
+
+###Residuos ~ Predictores
+estimado <- lm(indice~log.ahorro+log.ingreso +log.bienes+log.servicios, data=multiple.log)
+par(mfrow=c(2,2))
+
+plot(multiple.log$log.ahorro, residuals(estimado),xlab="log(ahorros)")
+plot(multiple.log$log.ingreso, residuals(estimado),xlab="log(ingreso)")
+plot(multiple.log$log.bienes, residuals(estimado),xlab="log(bienes)")
+plot(multiple.log$log.servicios, residuals(estimado),xlab="log(servicios)")
+
+###REsiduos~valores predichos
+plot(fitted(estimado),residuals(estimado),xlab="Indice Predicho", ylab="Residuos")
