@@ -1,0 +1,32 @@
+####ARIMA ESTACIONALIDAD
+
+library(readxl)
+estacional1 <- read_excel("C:/Users/Sala-F26/Downloads/arima_est2.xls")
+
+estacional1.ts <- ts(estacional1, start=c(2000,1), frequency=4)
+plot (estacional1.ts, ylab="ventas trimestrales", xlab="Periodo",col="blue")
+par(mfrow=c(1,2))
+
+##El grafico no tiene componentes estacionales, no es estacionaria 
+
+Acf(estacional1.ts)
+Pacf()
+
+##funcion de autocorrelacion, .. no es estacionaria
+
+tsdisplay(diff(estacional1.ts,4))
+
+##No logramos que la serie sea estacionaria
+##Recurrimos a un segundo proceso de diferenciacion 
+tsdisplay(diff(diff(estacional1.ts,4)))
+
+##En el doble proceso de diferenciacion, el correlograma de la fn de autocorrelacion parcial, aparentemente la
+##la serie seria estacionaria, pero hay un pico que no es significativo en el retraso 4
+## tenemos un proceso MA(1) de promedios moviles en el retraso 4
+##y un AR(1)
+
+
+estimado1 <-Arima(estacional1.ts, order=c(0,1,1),seasonal=c(0,1,1))
+tsdisplay(residuals(estimado1))
+
+##Se encuentran picos en los retrasos 2 y "3"
