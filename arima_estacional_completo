@@ -1,0 +1,127 @@
+library(readxl)
+
+estacional1 <- read_excel("C://Users//Usuario//Downloads//arima_est2.xlsx")
+
+estacional1.ts <- ts(estacional1, start=c(2000, 1), frequency=4)
+plot(estacional1.ts, ylab="Ventas trimestrales", xlab="Periodo", col="blue")
+par(mfrow=c(1,2))
+acf(estacional1.ts, main="Función de autocorrelación")
+pacf(estacional1.ts, main="Función de autocorrelación parcial")
+#Los resultados no muestran estacionariedad, con algún grado de estacionalidad. 
+#Estimamos una primeras diferencias. 
+
+
+tsdisplay(diff(estacional1.ts, 4))
+
+#Recurrimos a un segundo proceso de diferenciación
+tsdisplay(diff(diff(estacional1.ts, 4)))
+
+#Una vez "estacionaria" la serie, procedemos a estimar un modelo ARIMA
+#El aumento en el retraso 1 en el PACF sugiere un componente no estacional MA (1), 
+#y el incremento en el retraso 4 en el ACF sugiere un componente estacional MA (1).
+#Modelo ARIMA (0,1,1) (0,1,1)4
+
+estimado1 <- Arima(estacional1.ts, order= c(0,1,1), seasonal= c(0,1,1))
+tsdisplay(residuals(estimado1))
+#Se encuentran picos en los retarsos 2 y "3". 
+
+#Se prueba la inclusión de un modelo ARIMA(0,1,2) (0,1,1)4
+#Se prueba la inclusión de un modelo ARIMA(0,1,3) (0,1,1)4
+#Modelo ARIMA (0,1,3) (0,1,1)4
+estimado2 <- Arima(estacional1.ts, order= c(0,1,2), seasonal= c(0,1,1))
+residuos2 <- residuals(estimado2)
+tsdisplay(residuos2)
+summary(estimado2)
+#Modelo ARIMA (0,1,3) (0,1,1)4
+estimado3 <- Arima(estacional1.ts, order= c(0,1,3), seasonal= c(0,1,1))
+residuos3 <- residuals(estimado3)
+tsdisplay(residuos3)
+summary(estimado3)
+
+#Prueba de residuos
+Box.test(residuos3, lag=16, fitdf=4, type="Ljung")
+
+#Graficamos y requerimos los valores de los pronósticos
+plot(forecast(estimado3, h=20))
+summary(forecast(estimado3, h=20))
+
+#Probamos con la función auto.arima
+auto.arima(estacional1.ts)
+#Observamos que el modelo estimado por la función auto.arima supera en el AICc o BIC
+#al modelo estimado ARIMA (0,1,3) (0,1,1).
+#Optamos por restringir la función auto.arima truncando la opción stepwise
+
+estimado.auto<- auto.arima(estacional1.ts,
+                           stepwise=FALSE, approximation=FALSE)
+summary(estimado.auto)
+plot(forecast(estimado.auto))
+summary(forecast(estimado.auto, h=20))
+
+#########################################################################################################
+###ARIMA estacionalidad. Ejemplo 2.
+
+library(readxl)
+estacional <- read_excel("D://clases//time-series//topics//data//arima_est3.xlsx")
+
+estacional.ts <- ts(estacional, start=c(2000, 1), frequency=12)
+plot(estacional.ts, col="99")
+l.estacional.ts <- log(estacional.ts)
+
+windows()
+par(mfrow=c(2,1))
+plot(estacional.ts, ylab="Ventas de mazapanes (millones)", xlab="Periodo", col="10")
+plot(l.estacional.ts, ylab="Log ventas de mazapanes", xlab="Periodo", col="3")
+
+#Se emplean diferencias
+tsdisplay(diff(estacional.ts, 12),
+          main="Ventas estacionalmente diferenciadas", xlab="Periodo")
+
+tsdisplay(diff(diff(estacional.ts, 12),
+               main="Ventas estacionalmente diferenciadas", xlab="Periodo"))
+#library(ggplot2)
+
+#Mejor estimación entre 7 modelos
+estimado1 <- Arima(estacional.ts, order=c(3,0,0), seasonal=c(2,1,0), lambda=0)
+summary(estimado1)
+
+estimado2 <- Arima(estacional.ts, order=c(3,0,1), seasonal=c(2,1,0), lambda=0)
+summary(estimado2)
+
+estimado3 <- Arima(estacional.ts, order=c(3,0,2), seasonal=c(2,1,0), lambda=0)
+summary(estimado3)
+
+estimado4 <- Arima(estacional.ts, order=c(3,0,1), seasonal=c(1,1,0), lambda=0)
+summary(estimado4)
+
+estimado5 <- Arima(estacional.ts, order=c(3,0,1), seasonal=c(0,1,1), lambda=0)
+summary(estimado5)
+
+estimado6 <- Arima(estacional.ts, order=c(3,0,1), seasonal=c(0,1,2), lambda=0)
+summary(estimado6)
+
+estimado7 <- Arima(estacional.ts, order=c(3,0,1), seasonal=c(1,1,1), lambda=0)
+summary(estimado7)
+
+tsdisplay(residuals(estimado6))
+Box.test(residuals(estimado6), lag=36, fitdf=6, type="Ljung")
+
+#Probamos el ajuste con la función auto.arima
+estimado.auto1<- auto.arima(estacional.ts,
+                            stepwise=FALSE, approximation=FALSE)
+plot(forecast(estimado.auto1))
+summary(estimado.auto1)
+
+tsdisplay(residuals(estimado.auto1))
+Box.test(residuals(estimado.auto1), lag=36, fitdf=6, type="Ljung")
+
+#Probamos el ajuste de un modelo más complejo.
+#El modelo incluye límites a los procesos de diferenciación (d=0) y otra (D=1)
+estimado.auto2<- auto.arima(estacional.ts, lambda=0, d=0, D=1, max.order=9,
+                            stepwise=FALSE, approximation=FALSE)
+tsdisplay(residuals(estimado.auto2))
+Box.test(residuals(estimado.auto2), lag=36, fitdf=8, type="Ljung")
+
+#Pronósticos
+plot(forecast(estimado.auto2), ylab="Mazapanes", xlab="Periodo")
+summary(estimado.auto2)
+summary(forecast(estimado.auto2))
