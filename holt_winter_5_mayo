@@ -1,0 +1,190 @@
+#################################################################################################
+#Suavizado Exponencial Simple
+#Método propicio para pronosticar datos sin tendencia o patrón estacional.
+
+install.packages("fpp")
+library(fpp)
+
+library(readxl)
+ventas <- read_excel("F://clases//time-series//clases//tendency//ejemplo.xlsx")
+
+ventas.ts <- ts(ventas, start=c(1990))
+plot(ventas.ts, col="blue")
+
+#Prueba de tres distintos niveles de alpha.
+#Note que el modelo "ventas3" no se le indicó el nivel del alpha. ¿Qué implica esto?
+ventas1 <- ses(ventas.ts, alpha=0.25, initial="simple", h=5)
+ventas2 <- ses(ventas.ts, alpha=0.65, initial="simple", h=5)
+ventas3 <- ses(ventas.ts, initial="simple", h=5)
+
+#Graficamos la serie (yt) y los valores suavizados.
+plot(ventas1, ylab="Ventas (Millones de dolares)",
+     xlab="Año", main="Suavizado Exponencial Simple", type="o")
+
+lines(fitted(ventas1), col="blue", type="o")
+lines(fitted(ventas2), col="red", type="o")
+lines(fitted(ventas3), col="green", type="o")
+
+#Incluímos las líneas correspondientes a los pronósticos.
+lines(ventas1$mean, col="blue", type="o")
+lines(ventas2$mean, col="red", type="o")
+lines(ventas3$mean, col="green", type="o")
+
+legend("topleft",lty=1, col=c(1,"blue","red","green"),
+       c("Observados", expression(alpha == 0.25), expression(alpha == 0.65),
+         expression(alpha == estimado)),pch=1)
+
+#Pedimos estadísticos resumen y de ajuste de los modelos estimados. 
+summary(ventas1)
+summary(ventas2)
+summary(ventas3)
+
+#################################################################################################
+#################
+#Holt: exponenciado doble
+#Método propicio para pronosticar datos con tendencia pero sin estacionalidad.
+
+library(readxl)
+ipc <- read_excel("F://clases//time-series//clases//smooth//holt2.xlsx")
+
+ipc.ts <- ts(ipc, start=c(1990), frequency=12)
+plot(ipc.ts, col="red")
+
+ipc1 <- holt(ipc.ts, alpha=0.35, beta=0.25, h=15)
+ipc2 <- holt(ipc.ts, alpha=0.45, beta=0.15, h=15)
+ipc3 <- holt(ipc.ts, alpha=0.55, beta=0.30, h=15)
+
+# Resultados:
+ipc1$model$state
+ipc2$model$state
+ipc3$model$state
+
+plot(ipc1, type="o", ylab="Suavizado Método de Holt", xlab="Año", main="Pronosticos por método Holt", plot.conf=FALSE)
+lines(fitted(ipc1), col="blue")
+lines(fitted(ipc2), col="green")
+lines(fitted(ipc3), col="red")
+
+lines(ipc1$mean, col="blue", type="o")
+lines(ipc2$mean, col="green", type="o")
+lines(ipc3$mean, col="red", type="o")
+
+legend("topleft", lty=1, col=c("black","blue","red", "green"),
+       c("Observados","Holt's suavizado de tendencia 1","Holt's suavizado de tendencia 2", "Holt's suavizado de tendencia 3"))
+
+summary(ipc1)
+summary(ipc2)
+summary(ipc3)
+
+#################################################################################################
+#################
+#Winters: tres parámetros
+#Método para pronosticar datos con tendencia y estacionalidad. 
+
+install.packages("fpp")
+library(fpp)
+
+library(readxl)
+winter <- read_excel("F://clases//time-series//clases//smooth//winter.xlsx")
+
+winter.ts <- ts(winter, start=c(1990), frequency=12)
+plot(winter.ts, col="black")
+
+winter1 <- hw(winter.ts, seasonal="additive")
+winter2 <- hw(winter.ts, seasonal="multiplicative")
+
+plot(winter2,ylab="International visitor night in Australia (millions)",
+     plot.conf=FALSE, type="o", xlab="Year")
+lines(fitted(winter1), col="red", lty=2)
+lines(fitted(winter2), col="green", lty=2)
+lines(winter1$mean, type="o", col="red")
+lines(winter2$mean, type="o", col="green")
+legend("topleft",lty=1, pch=1, col=1:3,
+       c("Observados","Winters Aditivo", "Winters Multiplicativo"))
+
+#Aislamos los componentes de nivel, de pendiente y de estacionalidad según se opte por estacionalidad,
+#aditiva o multiplicativas.
+estados <- cbind(winter1$model$states[,1:3], winter2$model$states[,1:3])
+colnames(estados) <- c("Nivel","Tendencia","Estacional","Nivel","Tendencia","Estacional")
+
+plot(estados, xlab="Año")
+winter1$model$state[,1:3]
+fitted(winter1)
+winter1$mean
+
+summary(winter1)
+summary(winter2)
+
+#################
+#Comparar con el ejercicio anterior
+install.packages("forecast")
+library(forecast)
+
+library(readxl)
+winter <- read_excel("F://clases//time-series//clases//smooth//winter.xlsx")
+
+winter.ts <- ts(winter, start=c(1990), frequency=12)
+plot(winter.ts, col="black")
+
+winter1 <- hw(winter.ts, seasonal="additive", alpha=0.1, beta=0.05, gamma=0.05)
+winter2 <- hw(winter.ts, seasonal="additive", alpha=0.15, beta=0.01, gamma=0.01)
+
+plot(winter2, ylab="Indice mensual",
+     plot.conf=FALSE, type="o", xlab="Year")
+lines(fitted(winter1), col="red", lty=2)
+lines(fitted(winter2), col="green", lty=2)
+lines(winter1$mean, type="o", col="red")
+lines(winter2$mean, type="o", col="green")
+legend("topleft",lty=1, pch=1, col=1:3,
+       c("Observados","Winters Aditivo", "Winters Multiplicativo"))
+
+summary(winter1)
+summary(winter2)
+
+estados <- cbind(winter1$model$states[,1:3],winter2$model$states[,1:3])
+colnames(estados) <- c("Nivel","Pendiente","Estacional","Nivel","Pendiente","Estacional")
+plot(estados, xlab="Año")
+winter1$model$state[,1:3]
+fitted(winter1)
+winter1$mean
+
+#################################################################################################
+#Damped: Tendencia amortiguada
+#Método que amortigua la tendencia a una línea plana.
+
+library(readxl)
+damped2 <- read_excel("F://clases//time-series//clases//smooth//damped.xlsx")
+
+damped.ts <- ts(damped2, start=1985, end=2015)
+plot(damped.ts, col="black")
+
+dampening1 <- ses(damped.ts)
+dampening2 <- holt(damped.ts)
+dampening3 <- holt(damped.ts, exponential=TRUE)
+dampening4 <- holt(damped.ts, damped=TRUE)
+dampening5 <- holt(damped.ts, exponential=TRUE, damped=TRUE)
+
+summary(dampening1)
+summary(dampening2)
+summary(dampening3)
+summary(dampening4)
+summary(dampening5)
+
+plot(dampening3, type="o", ylab="Carne con agentes biológicos",
+     flwd=1, plot.conf=FALSE)
+lines(window(damped2, start=2016), type="o")
+lines(dampening1$mean, col=2)
+lines(dampening2$mean, col=3)
+lines(dampening4$mean, col=5)
+lines(dampening5$mean, col=6)
+legend("topleft", lty=1, pch=1, col=1:6,
+       c("Observados","SES","Holt","Doble Exponencial",
+         "Damped Aditivo","Damped Multiplicativo"))
+
+#Graficando, puede observarse la tendencia a aplanarse (amortiguar) de bt (tendencia). 
+plot(dampening1$model$state)
+plot(dampening2$model$state)
+plot(dampening3$model$state)
+plot(dampening4$model$state)
+plot(dampening5$model$state)
+
+#################################################################################################
