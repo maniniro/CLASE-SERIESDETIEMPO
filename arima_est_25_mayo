@@ -1,0 +1,55 @@
+#############################################################################
+install.packages("fpp")
+library(fpp)
+
+###ARIMA estacionalidad. Ejemplo 1
+library(readxl)
+estacional1 <- read_excel("C://Users//Sala-F26//Downloads//arima_est1.xlsx")
+estacional1.ts <- ts(estacional1, start= c(2000, 1), frequency=12)
+plot(estacional1.ts, col="6")
+###Observando la gráfica, no se identifica tendencia ni componentes estacionales
+
+###Función auto.arima
+#Modelo a estimar sin estacionalidad empleando la función auto.arima
+#Note que al incluir la opción "seasonal" indicamos que es falsa, es decir,
+#Yt no tiene componentes estacionales.
+estacional1.arima <- auto.arima(estacional1.ts, seasonal=FALSE)
+
+#Gráfico y resumen de pronósticos
+windows()
+plot(forecast(estacional1.arima, h=10), include=80)
+summary(forecast(estacional1.arima))
+#Es importante que comparen los resultados del valor de los pronósticos con,
+#un método de pronóstico revisado con anterioridad.
+
+#Gráficos acf y pacf. Probamos la estacionariedad del modelo sólo como forma de verificar
+par(mfrow=c(1,2))
+Acf(estacional1.ts, main="Función de autocorrelación")
+Pacf(estacional1.ts, main="Función de autocorrelación parcial")
+#Los resultados indican que el modelo estimado es estacionario.
+#Se trata de un modelo de Ruido Blanco. En la clase del 05-25-2017 veremos la forma
+#de verificarlo gráficamente.
+tsdisplay(estacional1.ts)
+
+###Ejemplo 2. 
+library(readxl)
+estacional2 <- read_excel("C://Users//Sala-F26//Downloads//arima_est2.xlsx")
+estacional2.ts <- ts(estacional2[,1], start= c(2000, 1), frequency=12)
+plot(estacional2.ts, col="4")
+#La serie muestra tendencia y puede ser ¿componentes estacionales?
+
+#Ajustamos el "mejor modelo" al proceso con la función ARIMA
+#note que nos mantenemos bajo un proceso sin estacionalidad.
+estacional2.arima <- auto.arima(estacional2.ts, seasonal=FALSE)
+windows()
+plot(forecast(estacional2.arima, h=10), include=80)
+summary(forecast(estacional2.arima))
+
+#Probamos mediante ACF y PACF la estacionariedad del modelo.
+par(mfrow=c(1,2))
+Acf(estacional2.ts[,1], main="Función de autocorrelación")
+Pacf(estacional2.ts[,1], main="Función de autocorrelación parcial")
+#Observamos que no es un modelo estacionario.
+#¿Qué procedimiento debemos realizar?
+
+tsdisplay(estacional2.ts)
